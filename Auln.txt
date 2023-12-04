@@ -1,0 +1,30 @@
+--------Khai thác lỗ hổng smb-ms17-010(win7)----
+- scan port: nmap -sV -sC -O [ip_bị_att]
+ 
+- scan smb : nmap -script smb-vuln* -p 445 [ipatt].
+- metasploit: search smb-ms17-010.(rồi làm).
+- vá lỗi: catalog.update.microsoft.com/DownloadDialog.aspx: search(kb4012212) 
+------------------------------------------------
+Kiểm tra có lỗ hổng (win10) không:
+msf > use auxiliary/scanner/smb/smb_ms17_010
+msf auxiliary (smb_ms17_010) > set RHOSTS 192.168.1.50
+msf auxiliary (smb_ms17_010) > set THREADS 10
+msf auxiliary (smb_ms17_010) > run
+
+https://nmap.org/nsedoc/scripts/smb-vuln-ms17-010.html
+
+
+--------cmd------------
+- dir : liệt kê tất cả các file hay thư mục bên trong thư mục hay vị trí đang đứng.
+- cls: xóa màn hình.
+- cd : di chuyển vị trí.(cd <tên đường dẫn>)(c sang e thi E:), cd.. lùi, 
+- copy: copy <tên file nguồn> <tên file đích>.
+- move <tên file nguồn> <tên thư mục đích>.
+- del <tên file 1> <tên file 2> <tên file 3> ... <tên file n>(rm trong kali).
+- md <tên thư mục 1> <tên thư mục 2> ... <tên thư mục n>: tạo mới thư mục.
+- Tạo file mới: type nul > <tên file>
+echo nul > <tên file>.
+- systeminfo: Hiển thị thông tin của hệ thống.
+- chkdsk (check disk): Kiểm tra ổ cứng(chdsk /?)
+- type <tenfile>: đọc nội dung file.(nếu có & thì thêm dấu "").
+- attrib Thay đổi thuộc tính của file
